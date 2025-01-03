@@ -217,7 +217,7 @@ const AttendanceOverview = ({ id }: Props) => {
                 key={schedule.scheduleDetailId}
                 value={schedule.scheduleDetailId}
               >
-                {formatDate(new Date(schedule.date))}
+                {formatDate(new Date(schedule.date))} - Slot {schedule.slot}
               </option>
             ))}
           </select>
