@@ -263,9 +263,9 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
         const endDay = endDate.getDate(); // Get the day of the month
         const endTimeString = attendance.endDate.split("T")[1];
 
-        // if (endDate < startToday || endDate > endToday) {
-        //   return false;
-        // }
+        if (endDate < startToday || endDate > endToday) {
+          return false;
+        }
 
         if (endDate < start || endDate > end) {
           return false;
