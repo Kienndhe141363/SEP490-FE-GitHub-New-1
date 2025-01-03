@@ -123,7 +123,10 @@ const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
 
   const hasTeacherReplace = listTrainer?.length > 1;
 
-  if (!listTrainer.includes(formData?.trainer) && formData?.trainer)
+  if (
+    !listTrainer.find((item: any) => item.account === formData?.trainer) &&
+    formData?.trainer
+  )
     listTrainer.push({
       account: formData?.trainer,
     });
