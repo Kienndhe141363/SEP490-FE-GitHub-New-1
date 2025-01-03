@@ -117,7 +117,7 @@ const AddNewClass4Form = ({ setActiveStep, data }: AddNewClass4FormProps) => {
       setLoading(false); // Tắt loading
     }
   };
-  
+
   const getTimeTableBySubject = async (sessionList: any) => {
     try {
       const response = await axios.post(
@@ -183,14 +183,13 @@ const AddNewClass4Form = ({ setActiveStep, data }: AddNewClass4FormProps) => {
   useEffect(() => {
     fetchListSubject();
   }, []);
-  
+
   if (loading) {
     return <SpinnerLoader />;
   }
   return (
     <div className="flex ml-[228px] bg-[#EFF5EB] min-h-screen">
       {/* Sidebar */}
-      
 
       {/* Main Content */}
       <div className="flex-1 p-8 overflow-y-auto">

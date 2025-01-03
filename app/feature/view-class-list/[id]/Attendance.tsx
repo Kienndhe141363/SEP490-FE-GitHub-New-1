@@ -133,6 +133,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
       });
       // TODO: Refetch data
       fetchListAttendance();
+      fetchStatistics();
     } catch (error) {
       // console.error(error);
       toast.error("Add attendance failed", {
