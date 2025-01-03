@@ -46,7 +46,7 @@ const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
   const [formData, setFormData] = useState({
     subjectName: "Java",
     lesson: "Lesson2",
-    trainer: "HuyLT7",
+    trainer: "",
     date: "2024-12-09", // Định dạng ngày (YYYY-MM-DD) cho input type="date"
     startDate: "2024-12-09",
     endDate: "2024-12-09",
@@ -112,7 +112,6 @@ const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
   // Hàm xử lý khi nhấn nút "Cancel"
   const handleCancel = () => {
     setScheduleSelected(null);
-    
   };
 
   useEffect(() => {
@@ -123,6 +122,11 @@ const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
   }, [schedule]);
 
   const hasTeacherReplace = listTrainer?.length > 1;
+
+  if (!listTrainer.includes(formData?.trainer) && formData?.trainer)
+    listTrainer.push({
+      account: formData?.trainer,
+    });
 
   return (
     <div className="min-h-screen flex-1  bg-[#EFF5EB] p-8 py-10">

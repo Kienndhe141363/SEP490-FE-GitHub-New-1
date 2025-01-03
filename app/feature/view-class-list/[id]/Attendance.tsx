@@ -14,132 +14,31 @@ import { BASE_API_URL } from "@/config/constant";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-// Helper functions for date handling
-const createDaysArray = (month: number, year: number) => {
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  return Array.from({ length: daysInMonth }, (_, i) => i + 1);
-};
-
-const createYearsArray = (startYear: number, endYear: number) => {
-  return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
-};
-
-interface Week {
-  start: number;
-  end: number;
-  startDate: Date;
-  endDate: Date;
-}
-
-const getWeeksInMonth = (month: number, year: number) => {
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = new Date(year, month, 1);
-  const weeks: Week[] = [];
-  let currentStart = 1;
-
-  while (currentStart <= daysInMonth) {
-    const currentDate = new Date(year, month, currentStart);
-    const remainingDays = daysInMonth - currentStart + 1;
-    let daysInWeek = Math.min(7, remainingDays);
-
-    if (currentStart === 1) {
-      daysInWeek = 7 - firstDayOfMonth.getDay();
-    } else if (remainingDays >= 7) {
-      daysInWeek = 7;
-    }
-
-    weeks.push({
-      start: currentStart,
-      end: currentStart + daysInWeek - 1,
-      startDate: new Date(year, month, currentStart),
-      endDate: new Date(year, month, currentStart + daysInWeek - 1)
-    });
-    currentStart += daysInWeek;
-  }
-
-  return weeks;
-};
-
-const weekLabels = (weeks: Week[]) => {
-  return weeks.map((week, index) => {
-    const startDateStr = week.startDate.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit'
-    });
-    const endDateStr = week.endDate.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit'
-    });
-    return `Week ${index + 1} (${startDateStr} - ${endDateStr})`;
-  });
-};
-
-const monthMapping: { [key: string]: number } = {
-  January: 1,
-  February: 2,
-  March: 3,
-  April: 4,
-  May: 5,
-  June: 6,
-  July: 7,
-  August: 8,
-  September: 9,
-  October: 10,
-  November: 11,
-  December: 12,
-};
+const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 const attendanceStatus = {
   P: "Present",
   A: "Absent",
   L: "Late",
-  E: "Early",
   An: "Absent with notice",
   Ln: "Late with notice",
-  En: "Early with notice",
-};
-
-const attendanceNotes = {
-  P: "Present",
-  L: "Late Not Justified",
-  Ln: "Late In",
-  E: "Early Out Not Justified",
-  En: "Early Out",
-  An: "Absent Not Justified",
-  A: "Absent",
 };
 
 const getAttendanceColor = (status: string) => {
   switch (status) {
     case "P":
-      return "bg-green-400 text-green-800";
+      return "bg-green-100 text-green-800";
     case "A":
-      return "bg-red-400 text-red-800";
+      return "bg-red-100 text-red-800";
     case "L":
-      return "bg-yellow-400 text-yellow-800";
-    case "E":
-      return "bg-yellow-400 text-pink-800";
+      return "bg-yellow-100 text-yellow-800";
     case "An":
-      return "bg-blue-400 text-blue-800";
+      return "bg-blue-100 text-blue-800";
     case "Ln":
-      return "bg-purple-400 text-purple-800";
-    case "En":
-      return "bg-purple-400 text-gray-800";
+      return "bg-purple-100 text-purple-800";
     default:
       return "";
   }
-};
-
-const isCurrentDate = (date: number, selectedMonth: string, selectedYear: number) => {
-  const today = new Date();
-  const months = Object.keys(monthMapping);
-  const checkDate = new Date(selectedYear, months.indexOf(selectedMonth), date);
-  
-  return (
-    today.getDate() === checkDate.getDate() &&
-    today.getMonth() === checkDate.getMonth() &&
-    today.getFullYear() === checkDate.getFullYear()
-  );
 };
 
 type Props = {
@@ -147,38 +46,17 @@ type Props = {
   listTrainee: any[];
 };
 
+const specialWeek = "30/12-5/1";
 const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  const dateTime = {
-    January: createDaysArray(0, currentYear),
-    February: createDaysArray(1, currentYear),
-    March: createDaysArray(2, currentYear),
-    April: createDaysArray(3, currentYear),
-    May: createDaysArray(4, currentYear),
-    June: createDaysArray(5, currentYear),
-    July: createDaysArray(6, currentYear),
-    August: createDaysArray(7, currentYear),
-    September: createDaysArray(8, currentYear),
-    October: createDaysArray(9, currentYear),
-    November: createDaysArray(10, currentYear),
-    December: createDaysArray(11, currentYear),
-  };
-
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState<keyof typeof dateTime>(
-    Object.keys(dateTime)[currentMonth] as keyof typeof dateTime
-  );
-  const [selectedWeek, setSelectedWeek] = useState<number>(0);
-  const [weeks, setWeeks] = useState<Week[]>([]);
   const [listSubject, setListSubject] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [listAttendance, setListAttendance] = useState([]);
   const [listAttendanceUpdate, setListAttendanceUpdate] = useState([]);
+  const [statistic, setStatistics] = useState([]);
 
-  const years = createYearsArray(currentYear - 5, currentYear + 5);
-  const months = Object.keys(dateTime);
-  const attendanceStatusKeys = Object.keys(attendanceStatus);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedWeek, setSelectedWeek] = useState("2/12-8/12");
 
   const fetchListSubject = async () => {
     try {
@@ -203,8 +81,8 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
       const res = await axios.post(
         `${BASE_API_URL}/attendance-management/search-by-class?classId=${id}&subjectId=${selectedSubject}`,
         {
-          classId: id,
-          subjectId: selectedSubject,
+          classId: id, // ID lớp học
+          subjectId: selectedSubject, // ID môn học
         },
         {
           headers: {
@@ -213,6 +91,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
         }
       );
       if (res?.data) {
+        console.log(res?.data?.data?.listAttendances);
         setListAttendance(res?.data?.data?.listAttendances);
         setListAttendanceUpdate([]);
       }
@@ -221,9 +100,8 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
     }
   };
 
-  const handleChangeMonth = (month: keyof typeof dateTime) => {
-    setSelectedMonth(month);
-  };
+  console.log("listAttendanceUpdate", listAttendanceUpdate);
+  console.log("listAttendance", listAttendance);
 
   const handleReset = () => {
     setListAttendanceUpdate([]);
@@ -249,11 +127,14 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
           },
         }
       );
+      // alert("Add attendance successfully");
       toast("Add attendance successfully", {
         icon: "✅",
       });
+      // TODO: Refetch data
       fetchListAttendance();
     } catch (error) {
+      // console.error(error);
       toast.error("Add attendance failed", {
         icon: "❌",
       });
@@ -265,89 +146,282 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
     setListAttendance([]);
   };
 
-  const findAttendance = (userId: number, date: any) => {
-    const currentYear = new Date().getFullYear();
-    const monthIndex = months.indexOf(selectedMonth);
-    const targetDate = new Date(currentYear, monthIndex, date);
-  
+  const getDateByDayAndCurrentWeek = (day: string, week: string) => {
+    const [startDay, endDay] = week.split("-");
+
+    const [startDayNumber, startMonth] = startDay.split("/").map(Number);
+    const [endDayNumber, endMonth] = endDay.split("/").map(Number);
+
+    let start, end;
+
+    if (week === specialWeek) {
+      // Handle special week case
+      start = new Date(Date.UTC(2024, 11, 30)); // 30/12/2024
+      end = new Date(Date.UTC(2025, 0, 5)); // 05/01/2025
+    } else {
+      start = new Date(selectedYear, startMonth - 1, startDayNumber);
+      end = new Date(selectedYear, endMonth - 1, endDayNumber);
+    }
+
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const dayIndex = days.indexOf(day);
+
+    while (start.getDay() !== dayIndex) {
+      start.setDate(start.getDate() + 1);
+    }
+
+    return start.getDate();
+  };
+
+  const getRangeTimeByWeek = (week: string) => {
+    const [startDay, endDay] = week.split("-");
+
+    const [startDayNumber, startMonth] = startDay.split("/").map(Number);
+    const [endDayNumber, endMonth] = endDay.split("/").map(Number);
+
+    let start, end;
+
+    if (week === specialWeek) {
+      // Handle special week case
+      start = new Date(Date.UTC(2024, 11, 30)); // 30/12/2024
+      end = new Date(Date.UTC(2025, 0, 5)); // 05/01/2025
+    } else {
+      start = new Date(selectedYear, startMonth - 1, startDayNumber);
+      end = new Date(selectedYear, endMonth - 1, endDayNumber);
+    }
+
+    return [start, end];
+  };
+
+  const findAttendance = (userId: number, dateSlot: any) => {
     const userAttendance = listAttendance.find(
       (attendance: any) => attendance.userId === userId
     );
-  
+
+    const [day, slot] = dateSlot.split("-");
+    const date = getDateByDayAndCurrentWeek(day, selectedWeek);
+
+    const [start, end] = getRangeTimeByWeek(selectedWeek);
+
     const attendanceDetail = userAttendance?.litAttendanceStatuses.find(
       (attendance: any) => {
         const endDate = new Date(attendance.endDate);
-        return endDate.getDate() === targetDate.getDate() &&
-               endDate.getMonth() === targetDate.getMonth() &&
-               endDate.getFullYear() === targetDate.getFullYear();
+        const endDay = endDate.getDate(); // Get the day of the month
+        const endTimeString = attendance.endDate.split("T")[1];
+
+        if (endDate < start || endDate > end) {
+          return false;
+        }
+
+        if (endDay !== date) {
+          return false;
+        }
+
+        if (slot === "slot1" && endTimeString.includes("04:30:00")) {
+          return true;
+        }
+
+        if (slot === "slot2" && endTimeString.includes("10:00:00")) {
+          return true;
+        }
+
+        return false;
       }
     );
 
     return (
       listAttendanceUpdate.find(
         (attendance: any) =>
-          attendance.userId === userId && attendance.date === date
+          attendance.userId === userId && attendance.date === dateSlot
       )?.status ||
       attendanceDetail?.status ||
       ""
     );
   };
 
-  const isDisableAttendance = (userId: number, date: any) => {
-    if (!isCurrentDate(date, selectedMonth, selectedYear)) {
-      return true;
-    }
+  const attendanceStatusKeys = Object.keys(attendanceStatus);
 
+  const isDisableAttendance = (userId: number, dateSlot: any) => {
     const userAttendance = listAttendance.find(
       (attendance: any) => attendance.userId === userId
     );
 
+    const [day, slot] = dateSlot.split("-");
+    const date = getDateByDayAndCurrentWeek(day, selectedWeek);
+
+    const [start, end] = getRangeTimeByWeek(selectedWeek);
+
+    const startToday = new Date();
+    startToday.setHours(0, 0, 0, 0);
+    const endToday = new Date();
+    endToday.setHours(23, 59, 59, 999);
+
     const attendanceDetail = userAttendance?.litAttendanceStatuses.find(
       (attendance: any) => {
-        const endDate = new Date(attendance.endDate).getDate();
-        return endDate === date;
+        const endDate = new Date(attendance.endDate);
+        const endDay = endDate.getDate(); // Get the day of the month
+        const endTimeString = attendance.endDate.split("T")[1];
+
+        // if (endDate < startToday || endDate > endToday) {
+        //   return false;
+        // }
+
+        if (endDate < start || endDate > end) {
+          return false;
+        }
+
+        if (endDay !== date) {
+          return false;
+        }
+
+        if (slot === "slot1" && endTimeString.includes("04:30:00")) {
+          return true;
+        }
+
+        if (slot === "slot2" && endTimeString.includes("10:00:00")) {
+          return true;
+        }
+
+        return false;
       }
     );
 
     return !attendanceDetail;
   };
 
-  const findScheduleDetailId = (userId: number, date: any) => {
+  const findScheduleDetailId = (userId: number, dateSlot: any) => {
     const userAttendance = listAttendance.find(
       (attendance: any) => attendance.userId === userId
     );
 
+    const [day, slot] = dateSlot.split("-");
+    const date = getDateByDayAndCurrentWeek(day, selectedWeek);
+
+    const [start, end] = getRangeTimeByWeek(selectedWeek);
+
     const attendanceDetail = userAttendance?.litAttendanceStatuses.find(
       (attendance: any) => {
-        const endDate = new Date(attendance.endDate).getDate();
-        return endDate === date;
+        const endDate = new Date(attendance.endDate);
+
+        const endDay = endDate.getDate(); // Get the day of the month
+        const endTimeString = attendance.endDate.split("T")[1];
+
+        if (endDate < start || endDate > end) {
+          return false;
+        }
+
+        if (endDay !== date) {
+          return false;
+        }
+
+        if (slot === "slot1" && endTimeString.includes("04:30:00")) {
+          return true;
+        }
+
+        if (slot === "slot2" && endTimeString.includes("10:00:00")) {
+          return true;
+        }
+
+        return false;
       }
     );
 
     return attendanceDetail?.scheduleDetailId;
   };
 
-  const getCurrentWeekDays = () => {
-    if (!weeks[selectedWeek]) return [];
-    const { start, end } = weeks[selectedWeek];
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  const getCurrentWeek = () => {
+    const currentDate = new Date();
+    const currentDayOfWeek = currentDate.getDay();
+    const currentYear = currentDate.getFullYear();
+
+    // Adjust currentDate to the previous Monday
+    const startDate = new Date(currentDate);
+    startDate.setDate(
+      currentDate.getDate() -
+        (currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1)
+    );
+
+    // Calculate the end date (Sunday)
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+
+    // Handle special week case
+    if (startDate.getDate() === 30 && startDate.getMonth() === 11) {
+      return specialWeek;
+    }
+
+    return `${startDate.getDate()}/${
+      startDate.getMonth() + 1
+    }-${endDate.getDate()}/${endDate.getMonth() + 1}`;
   };
 
   useEffect(() => {
     fetchListSubject();
+    setSelectedWeek(getCurrentWeek());
   }, []);
+
+  const fetchStatistics = async () => {
+    try {
+      const response = await axios.post(
+        `${BASE_API_URL}/attendance-management/attendance-report-list`,
+        {
+          classId: id,
+          subjectId: selectedSubject,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getJwtToken()}`,
+          },
+        }
+      );
+      if (response?.data?.data) {
+        setStatistics(response?.data?.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     if (!selectedSubject) return;
     fetchListAttendance();
-  }, [selectedSubject, listTrainee]);
+    fetchStatistics();
+  }, [selectedSubject]);
+  console.log("statistic", statistic);
 
-  useEffect(() => {
-    const monthIndex = Object.keys(dateTime).indexOf(selectedMonth);
-    const weeksInMonth = getWeeksInMonth(monthIndex, selectedYear);
-    setWeeks(weeksInMonth);
-    setSelectedWeek(0);
-  }, [selectedMonth, selectedYear]);
+  const generateWeeks = (year: number) => {
+    const weeks = [];
+    if (year == 2025) weeks.push(specialWeek);
+    let startDay = new Date(year, 0, 1);
+
+    // Adjust startDay to the first Monday of the year
+    while (startDay.getDay() !== 1) {
+      startDay.setDate(startDay.getDate() + 1);
+    }
+
+    for (let i = 0; i < 52; i++) {
+      const endDay = new Date(startDay);
+      endDay.setDate(endDay.getDate() + 6);
+      weeks.push(
+        `${startDay.getDate()}/${startDay.getMonth() + 1}-${endDay.getDate()}/${
+          endDay.getMonth() + 1
+        }`
+      );
+      startDay.setDate(startDay.getDate() + 7);
+    }
+    if (year == 2024) weeks.push(specialWeek);
+    return weeks;
+  };
+
+  const weeks = generateWeeks(selectedYear);
+
+  const getReportValue = ({ userName, type }: any) => {
+    const user = statistic.find((item) => item.userName === userName);
+    if (user) {
+      return user.report[type];
+    }
+    return 0;
+  };
 
   return (
     <div>
@@ -355,45 +429,37 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
         <CardContent className="p-0">
           <div className="flex items-center gap-6 mb-6">
             <div className="flex items-center gap-4">
-              <span className="font-medium">MileStone:</span>
-
-              <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number(value))}>
-                <SelectTrigger className="w-[120px]">
+              <span className="font-medium">Year:</span>
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={(value) => {
+                  setSelectedYear(value as unknown as number);
+                  if (value === "2025") {
+                    setSelectedWeek(getCurrentWeek());
+                  } else {
+                    setSelectedWeek(specialWeek);
+                  }
+                }}
+              >
+                <SelectTrigger>
                   <SelectValue>{selectedYear}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="2024">2024</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Select value={selectedMonth} onValueChange={handleChangeMonth}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue>{selectedMonth}</SelectValue>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="font-medium">Week:</span>
+              <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue>{selectedWeek}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month} value={month}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select 
-                value={selectedWeek.toString()} 
-                onValueChange={(value) => setSelectedWeek(Number(value))}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select week" />
-                </SelectTrigger>
-                <SelectContent>
-                  {weekLabels(weeks).map((label, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {label}
+                  {weeks.map((week, index) => (
+                    <SelectItem key={index} value={week}>
+                      {week}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -421,122 +487,254 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-center gap-4">
-              <span className="font-medium">Note:</span>
-              <Select>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Click to view note" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(attendanceNotes).map(([key, value]) => (
-                    <SelectItem key={key} value={key}>
-                      {key}: {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="p-3 text-center w-16 bg-[#6FBC44] text-white border">
+                  <th
+                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    rowSpan={2}
+                  >
                     #
                   </th>
                   <th
-                    className="p-3 text-left bg-[#6FBC44] text-white border"
+                    className="p-2 text-left bg-green-500 text-white border border-green-600"
                     style={{ width: "300px" }}
+                    rowSpan={2}
                   >
                     Name
                   </th>
-                  {getCurrentWeekDays().map((date: number) => {
-                    const monthIndex = months.indexOf(selectedMonth);
-                    const currentDate = new Date(selectedYear, monthIndex, date);
-                    const formattedDate = currentDate.toLocaleDateString('en-GB', {
-                      day: '2-digit',
-                      month: '2-digit'
-                    });
-                    
-                    return (
+                  {days.map((date) => (
+                    <th
+                      key={date}
+                      colSpan={2}
+                      className="p-2 text-center bg-green-500 text-white border border-green-600"
+                    >
+                      {date}
+                    </th>
+                  ))}
+                  <th
+                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    rowSpan={2}
+                  >
+                    Number of Absent
+                  </th>
+                  <th
+                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    rowSpan={2}
+                  >
+                    Number of Late
+                  </th>
+                  <th
+                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    rowSpan={2}
+                  >
+                    No permission rate
+                  </th>
+                  <th
+                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    rowSpan={2}
+                  >
+                    Discipline Points
+                  </th>
+                </tr>
+                <tr>
+                  {days.map((date) => (
+                    <>
                       <th
-                        key={date}
-                        className="p-3 text-center bg-[#6FBC44] text-white border min-w-3"
+                        key={`${date}-slot1`}
+                        className="p-2 text-center bg-green-500 text-white border border-green-600 min-w-3"
                       >
-                        {formattedDate}
+                        Slot 1
                       </th>
-                    );
-                  })}
+                      <th
+                        key={`${date}-slot2`}
+                        className="p-2 text-center bg-green-500 text-white border border-green-600 min-w-3"
+                      >
+                        Slot 2
+                      </th>
+                    </>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {listTrainee.map((trainee, index) => (
                   <tr key={trainee.userId}>
-                    <td className="p-3 text-center border">{index + 1}</td>
-                    <td className="p-3 border" style={{ whiteSpace: "nowrap" }}>
+                    <td className="p-2 text-center border">{index + 1}</td>
+                    <td className="p-2 border" style={{ whiteSpace: "nowrap" }}>
                       {trainee.fullName}
                     </td>
-                    {getCurrentWeekDays().map((date: number) => (
-                      <td
-                        key={`${trainee.userId}-${date}`}
-                        className="p-3 text-center border min-w-3"
-                      >
-                        <select
-                          className={`bg-transparent cursor-pointer outline-none min-w-3 text-center font-medium
-                                    ${getAttendanceColor(findAttendance(trainee.userId, date))}
-                                    ${isDisableAttendance(trainee.userId, date) ? 'opacity-50' : ''}`}
-                          value={findAttendance(trainee.userId, date) || ""}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (!isCurrentDate(date, selectedMonth, selectedYear)) return;
+                    {days.map((date: any) => (
+                      <>
+                        <td
+                          key={`${trainee.userId}-${date}-slot1`}
+                          className="p-2 text-center border min-w-3"
+                        >
+                          <select
+                            className={`bg-transparent cursor-pointer outline-none min-w-3 w-14 text-center font-medium
+                                    ${getAttendanceColor("")}
+                                    ${
+                                      isDisableAttendance(
+                                        trainee.userId,
+                                        `${date}-slot1`
+                                      ) && "!bg-slate-500"
+                                    }
+                                    `}
+                            value={
+                              findAttendance(trainee.userId, `${date}-slot1`) ||
+                              ""
+                            }
+                            onChange={(e) => {
+                              const value = e.target.value;
 
-                            const foundIndex = listAttendanceUpdate.findIndex(
-                              (item) =>
-                                item.userId === trainee.userId &&
-                                item.date === date
-                            );
-                            if (foundIndex !== -1) {
-                              listAttendanceUpdate[foundIndex] = {
-                                userId: trainee.userId,
-                                date: date,
-                                status: value,
-                                scheduleDetailId: findScheduleDetailId(
-                                  trainee.userId,
-                                  date
-                                ),
-                              };
-                              setListAttendanceUpdate([...listAttendanceUpdate]);
-                            } else {
-                              setListAttendanceUpdate([
-                                ...listAttendanceUpdate,
-                                {
+                              const foundIndex = listAttendanceUpdate.findIndex(
+                                (item) =>
+                                  item.userId === trainee.userId &&
+                                  item.date === `${date}-slot1`
+                              );
+                              if (foundIndex !== -1) {
+                                listAttendanceUpdate[foundIndex] = {
                                   userId: trainee.userId,
-                                  date: date,
+                                  date: `${date}-slot1`,
                                   status: value,
                                   scheduleDetailId: findScheduleDetailId(
                                     trainee.userId,
-                                    date
+                                    `${date}-slot1`
                                   ),
-                                },
-                              ]);
-                            }
-                          }}
-                          disabled={isDisableAttendance(trainee.userId, date)}
+                                };
+                                setListAttendanceUpdate([
+                                  ...listAttendanceUpdate,
+                                ]);
+                              } else {
+                                setListAttendanceUpdate([
+                                  ...listAttendanceUpdate,
+                                  {
+                                    userId: trainee.userId,
+                                    date: `${date}-slot1`,
+                                    status: value,
+                                    scheduleDetailId: findScheduleDetailId(
+                                      trainee.userId,
+                                      `${date}-slot1`
+                                    ),
+                                  },
+                                ]);
+                              }
+                            }}
+                            disabled={isDisableAttendance(
+                              trainee.userId,
+                              `${date}-slot1`
+                            )}
+                          >
+                            <option value="">-</option>
+                            {attendanceStatusKeys.map((status, index) => (
+                              <option
+                                key={status}
+                                value={attendanceStatusKeys[index]}
+                              >
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td
+                          key={`${trainee.userId}-${date}-slot2`}
+                          className="p-2 text-center border min-w-3"
                         >
-                          <option value=""></option>
-                          {attendanceStatusKeys.map((status, index) => (
-                            <option
-                              key={status}
-                              value={attendanceStatusKeys[index]}
-                            >
-                              {status}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
+                          <select
+                            className={`bg-transparent cursor-pointer outline-none min-w-3 w-14 text-center font-medium
+                                    ${getAttendanceColor("")}
+                                    ${
+                                      isDisableAttendance(
+                                        trainee.userId,
+                                        `${date}-slot2`
+                                      ) && "!bg-slate-500"
+                                    }
+                                    `}
+                            value={
+                              findAttendance(trainee.userId, `${date}-slot2`) ||
+                              ""
+                            }
+                            onChange={(e) => {
+                              const value = e.target.value;
+
+                              const foundIndex = listAttendanceUpdate.findIndex(
+                                (item) =>
+                                  item.userId === trainee.userId &&
+                                  item.date === `${date}-slot2`
+                              );
+                              if (foundIndex !== -1) {
+                                listAttendanceUpdate[foundIndex] = {
+                                  userId: trainee.userId,
+                                  date: `${date}-slot2`,
+                                  status: value,
+                                  scheduleDetailId: findScheduleDetailId(
+                                    trainee.userId,
+                                    `${date}-slot2`
+                                  ),
+                                };
+                                setListAttendanceUpdate([
+                                  ...listAttendanceUpdate,
+                                ]);
+                              } else {
+                                setListAttendanceUpdate([
+                                  ...listAttendanceUpdate,
+                                  {
+                                    userId: trainee.userId,
+                                    date: `${date}-slot2`,
+                                    status: value,
+                                    scheduleDetailId: findScheduleDetailId(
+                                      trainee.userId,
+                                      `${date}-slot2`
+                                    ),
+                                  },
+                                ]);
+                              }
+                            }}
+                            disabled={isDisableAttendance(
+                              trainee.userId,
+                              `${date}-slot2`
+                            )}
+                          >
+                            <option value="">-</option>
+                            {attendanceStatusKeys.map((status, index) => (
+                              <option
+                                key={status}
+                                value={attendanceStatusKeys[index]}
+                              >
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </>
                     ))}
+                    <td className="p-2 text-center border">
+                      {getReportValue({
+                        userName: trainee.account,
+                        type: "absent",
+                      })}
+                    </td>
+                    <td className="p-2 border text-center">
+                      {getReportValue({
+                        userName: trainee.account,
+                        type: "late",
+                      })}
+                    </td>
+                    <td className="p-2 text-center border">
+                      {getReportValue({
+                        userName: trainee.account,
+                        type: "noPermissionRate",
+                      })}
+                      %
+                    </td>
+                    <td className="p-2 border text-center">
+                      {getReportValue({
+                        userName: trainee.account,
+                        type: "disciplinePoints",
+                      })}
+                    </td>
                   </tr>
                 ))}
               </tbody>
