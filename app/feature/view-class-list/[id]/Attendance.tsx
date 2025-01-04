@@ -526,7 +526,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                     #
                   </th>
                   <th
-                    className="p-2 text-left bg-[#6FBC44] text-white border border"
+                    className="p-2 text-left bg-[#6FBC44] text-white border"
                     style={{ width: "300px" }}
                     rowSpan={2}
                   >
@@ -536,31 +536,31 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                     <th
                       key={date}
                       colSpan={2}
-                      className="p-2 text-center bg-[#6FBC44] text-white border border"
+                      className="p-2 text-center bg-[#6FBC44] text-white border"
                     >
                       {date}
                     </th>
                   ))}
                   <th
-                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border"
                     rowSpan={2}
                   >
                     Number of Absent
                   </th>
                   <th
-                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border"
                     rowSpan={2}
                   >
                     Number of Late
                   </th>
                   <th
-                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border"
                     rowSpan={2}
                   >
                     No permission rate
                   </th>
                   <th
-                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border"
                     rowSpan={2}
                   >
                     Discipline Points
@@ -571,13 +571,13 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                     <>
                       <th
                         key={`${date}-slot1`}
-                        className="p-2 text-center bg-[#6FBC44] text-white border border min-w-3"
+                        className="p-2 text-center bg-[#6FBC44] text-white border min-w-3"
                       >
                         Slot 1
                       </th>
                       <th
                         key={`${date}-slot2`}
-                        className="p-2 text-center bg-[#6FBC44] text-white border border min-w-3"
+                        className="p-2 text-center bg-[#6FBC44] text-white border min-w-3"
                       >
                         Slot 2
                       </th>
