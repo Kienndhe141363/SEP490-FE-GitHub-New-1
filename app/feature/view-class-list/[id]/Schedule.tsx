@@ -15,6 +15,7 @@ type Props = {
 const Schedule = ({ id, startDate }: Props) => {
   const [subjects, setSubjects] = useState<any>([]);
   const [scheduleSelected, setScheduleSelected] = useState<any>(null);
+  const [listScheduleByClass, setListScheduleByClass] = useState<any>([]);
 
   const toggleSubject = (subjectId: number) => {
     setSubjects(
@@ -24,6 +25,12 @@ const Schedule = ({ id, startDate }: Props) => {
           : subject
       )
     );
+
+    if (
+      !listScheduleByClass.some((item: any) => item.subjectId === subjectId)
+    ) {
+      fetchScheduleByClass({ subjectId });
+    }
   };
 
   const getStatusByDate = (date: string) => {
@@ -56,6 +63,23 @@ const Schedule = ({ id, startDate }: Props) => {
     return true;
   };
 
+  const getTrainer = ({ subjectId, endDate }: any) => {
+    const scheduleBySubject = listScheduleByClass.find(
+      (item: any) => item.subjectId === subjectId
+    );
+
+    const scheduleDetail = scheduleBySubject?.data.find((item: any) => {
+      const endTimeWithAddedHours = new Date(item.endTime);
+      endTimeWithAddedHours.setHours(endTimeWithAddedHours.getHours() + 7);
+
+      return (
+        endTimeWithAddedHours.toISOString() === new Date(endDate).toISOString()
+      );
+    });
+
+    return scheduleDetail?.trainer || "";
+  };
+
   const getTimeTableBySubject = async (sessionList: any) => {
     try {
       const response = await axios.post(
@@ -71,6 +95,54 @@ const Schedule = ({ id, startDate }: Props) => {
       );
       const res = response.data;
       return res?.data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchScheduleByClass = async ({ subjectId }: any) => {
+    // if (listScheduleByClass.some((item: any) => item.subjectId === subjectId)) {
+    //   return;
+    // }
+
+    try {
+      const response = await axios.post(
+        `${BASE_API_URL}/class-management/get-schedule-by-class`,
+        {
+          classId: id,
+          size: 1000,
+          subjectId,
+        },
+        {
+          headers: { Authorization: `Bearer ${getJwtToken()}` },
+        }
+      );
+
+      const res = response.data;
+      const newList = res?.data?.dataSource;
+      if (
+        listScheduleByClass.some((item: any) => item.subjectId === subjectId)
+      ) {
+        const updatedList = listScheduleByClass.map((item: any) => {
+          if (item.subjectId === subjectId) {
+            return {
+              subjectId,
+              data: newList,
+            };
+          }
+          return item;
+        });
+        setListScheduleByClass(updatedList);
+        return;
+      }
+
+      setListScheduleByClass([
+        ...listScheduleByClass,
+        {
+          subjectId,
+          data: newList,
+        },
+      ]);
     } catch (error) {
       console.error(error);
     }
@@ -113,6 +185,7 @@ const Schedule = ({ id, startDate }: Props) => {
       );
 
       setSubjects(subjects);
+      fetchScheduleByClass({ subjectId: subjects[0].subjectId });
     } catch (error) {
       console.error(error);
     }
@@ -129,6 +202,7 @@ const Schedule = ({ id, startDate }: Props) => {
           schedule={scheduleSelected}
           setScheduleSelected={setScheduleSelected}
           classId={id}
+          fetchScheduleByClass2={fetchScheduleByClass}
         />
       ) : (
         <table className="min-w-full bg-white">
@@ -160,7 +234,12 @@ const Schedule = ({ id, startDate }: Props) => {
                     <tr key={index} className="border-t">
                       <td className="p-4 border-r">{index + 1}</td>
                       <td className="p-4 border-r">{lesson.lesson}</td>
-                      <td className="p-4 border-r">{lesson.trainer}</td>
+                      <td className="p-4 border-r">
+                        {getTrainer({
+                          subjectId: subject.subjectId,
+                          endDate: lesson.endDate,
+                        })}
+                      </td>
                       <td className="p-4 border-r">
                         {formatDate(new Date(lesson.startDate), "dd/MM/yyyy")}
                       </td>

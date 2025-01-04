@@ -5,7 +5,12 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
+const ScheduleForm = ({
+  schedule,
+  setScheduleSelected,
+  classId,
+  fetchScheduleByClass2,
+}: any) => {
   const [listTrainer, setListTrainer] = useState([]);
   const [listScheduleByClass, setListScheduleByClass] = useState<any>([]);
 
@@ -82,7 +87,7 @@ const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
   };
 
   // Hàm xử lý khi nhấn nút "Save"
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       const body = listScheduleByClass.map((item: any) =>
         item.slot === schedule.slot
@@ -99,11 +104,16 @@ const ScheduleForm = ({ schedule, setScheduleSelected, classId }: any) => {
               scheduleDetailId: item.scheduleDetailId,
             }
       );
-      axios.put(`${BASE_API_URL}/class-management/update-class-session`, body, {
-        headers: { Authorization: `Bearer ${getJwtToken()}` },
-      });
+      const res = await axios.put(
+        `${BASE_API_URL}/class-management/update-class-session`,
+        body,
+        {
+          headers: { Authorization: `Bearer ${getJwtToken()}` },
+        }
+      );
       toast.success(`Updated schedule successfully`);
       setScheduleSelected(null);
+      if (res) fetchScheduleByClass2({ subjectId: schedule.subjectId });
     } catch (error) {
       console.error(error);
     }
