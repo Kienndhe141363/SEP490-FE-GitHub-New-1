@@ -14,6 +14,19 @@ const ScheduleForm = ({
   const [listTrainer, setListTrainer] = useState([]);
   const [listScheduleByClass, setListScheduleByClass] = useState<any>([]);
 
+  const getSchedule = ({ subjectId, endDate, newList }: any) => {
+    const scheduleDetail = newList?.find((item: any) => {
+      const endTimeWithAddedHours = new Date(item.endTime);
+      endTimeWithAddedHours.setHours(endTimeWithAddedHours.getHours() + 7);
+
+      return (
+        endTimeWithAddedHours.toISOString() === new Date(endDate).toISOString()
+      );
+    });
+
+    return scheduleDetail;
+  };
+
   const fetchScheduleByClass = async () => {
     try {
       const response = await axios.post(
@@ -31,17 +44,20 @@ const ScheduleForm = ({
       const res = response.data;
       const newList = res?.data?.dataSource;
       setListScheduleByClass(newList);
+      const findSchedule = getSchedule({
+        subjectId: schedule.subjectId,
+        endDate: schedule.endDate,
+        newList: newList,
+      });
+
       setFormData({
         subjectName: schedule.subjectName,
         lesson: schedule.lesson,
-        trainer: newList.find((item: any) => item.slot === schedule.slot)
-          ?.trainer,
+        trainer: findSchedule?.trainer,
         date: schedule.date,
         startDate: schedule.startDate,
         endDate: schedule.endDate,
-        scheduleDetailId: newList.find(
-          (item: any) => item.slot === schedule.slot
-        )?.scheduleDetailId,
+        scheduleDetailId: findSchedule?.scheduleDetailId,
       });
     } catch (error) {
       console.error(error);
@@ -89,8 +105,13 @@ const ScheduleForm = ({
   // Hàm xử lý khi nhấn nút "Save"
   const handleSave = async () => {
     try {
+      const findSchedule = getSchedule({
+        subjectId: schedule.subjectId,
+        endDate: schedule.endDate,
+        newList: listScheduleByClass,
+      });
       const body = listScheduleByClass.map((item: any) =>
-        item.slot === schedule.slot
+        findSchedule?.scheduleDetailId === item.scheduleDetailId
           ? {
               trainer: formData.trainer,
               lesson: formData.lesson,

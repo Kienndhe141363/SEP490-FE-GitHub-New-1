@@ -33,6 +33,54 @@ const AddNewClass3Form = ({
   const [loadingImport, setLoadingImport] = useState(false);
   const router = useRouter();
 
+  const [listTraineeForAdd, setListTraineeForAdd] = useState<any[]>([]);
+  const [searchTraineeAdd, setSearchTraineeAdd] = useState("");
+
+  const listTraineeForAddDisplay = listTraineeForAdd?.filter(
+    (trainee) =>
+      !listTrainee.some((t) => t.userId === trainee.userId) &&
+      trainee.account.toLowerCase().includes(searchTraineeAdd.toLowerCase())
+  );
+
+  const handleAddTraineeToClass = async ({ classId, email }: any) => {
+    try {
+      await axios.post(
+        `${BASE_API_URL}/trainee/add?classId=${classId}&email=${email}`,
+        {
+          // classId,
+          // account,
+        },
+        {
+          headers: { Authorization: `Bearer ${getJwtToken()}` },
+        }
+      );
+      fetchListTrainee();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchListTraineeForAdd = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_API_URL}/trainee/get-trainees-without-class`,
+        {
+          size: 1000,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getJwtToken()}`,
+          },
+        }
+      );
+      // const data = await response.json();
+      console.log(res);
+      setListTraineeForAdd(res?.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const fetchListTrainee = async () => {
     try {
       const response = await fetch(
@@ -51,6 +99,7 @@ const AddNewClass3Form = ({
 
   useEffect(() => {
     fetchListTrainee();
+    fetchListTraineeForAdd();
   }, []);
 
   const handleCancel = () => {
@@ -114,7 +163,7 @@ const AddNewClass3Form = ({
       toast.error("No file selected");
       return;
     }
-  
+
     // Kiểm tra đuôi file phải là .xlsx
     if (
       file.type !==
@@ -124,7 +173,7 @@ const AddNewClass3Form = ({
       toast.error("Invalid file format. Please upload an Excel file (.xlsx).");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
     setLoadingImport(true); // Bắt đầu quá trình loading
@@ -137,12 +186,13 @@ const AddNewClass3Form = ({
           headers: { Authorization: `Bearer ${getJwtToken()}` },
         }
       );
-  
+
       if (response.ok) {
         const contentType = response.headers.get("Content-Type");
         if (contentType?.includes("application/json")) {
           toast.success("File imported successfully!");
           fetchListTrainee(); // Reload trainee list after successful import
+          fetchListTraineeForAdd();
         } else {
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
@@ -150,7 +200,7 @@ const AddNewClass3Form = ({
           a.href = url;
           a.download = "import-trainee-error.xlsx";
           a.click();
-  
+
           const errorMessage = response.headers.get("x-error-message");
           toast.error(
             errorMessage ||
@@ -170,23 +220,19 @@ const AddNewClass3Form = ({
     }
     setLoadingImport(false); // Kết thúc quá trình loading
   };
-  
-  
-  
 
   console.log(listTrainee);
   return (
     <div className="flex ml-[228px] bg-[#EFF5EB] min-h-screen">
       {/* Sidebar */}
-      
-      
+
       {/* Main Content */}
       <div className="flex-1 p-4">
-      {loadingImport && (
-        <div className="flex items-center justify-center">
-          <ImportLoader /> {/* Hiển thị SpinnerLoader khi đang loading */}
-        </div>
-      )}
+        {loadingImport && (
+          <div className="flex items-center justify-center">
+            <ImportLoader /> {/* Hiển thị SpinnerLoader khi đang loading */}
+          </div>
+        )}
         <h1 className="text-4xl font-bold">New Class</h1>
         <div className="mt-6">
           {/* Tabs */}
@@ -206,6 +252,83 @@ const AddNewClass3Form = ({
 
           {/* Main Content */}
           <div className="mt-6 pb-4">
+            <>
+              <input
+                type="text"
+                placeholder="Search trainee"
+                className="w-5/12 p-2 border border-gray-300 rounded-lg mb-4"
+                value={searchTraineeAdd}
+                onChange={(e) => setSearchTraineeAdd(e.target.value)}
+              />
+
+              <div className="w-full h-[250px] overflow-y-scroll mb-4 rounded-lg">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#6FBC44] text-white">
+                      <th className="py-4 px-6 text-center  border-r border-gray-300">
+                        #
+                      </th>
+                      <th className="py-4 px-6 text-center  border-r border-gray-300 w-10">
+                        Account
+                      </th>
+                      <th className="py-4 px-6 text-center  border-r border-gray-300">
+                        Email
+                      </th>
+                      <th className="py-4 px-6 text-center border-r border-gray-300">
+                        Phone number
+                      </th>
+                      <th className="py-4 px-6 ">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {listTraineeForAddDisplay?.map((trainee: any, index) => (
+                      <tr
+                        key={trainee.userId}
+                        className={index % 2 === 1 ? "bg-[#EFF5EB]" : ""}
+                      >
+                        <td className="py-4 px-6 border-r w-1/12 text-center border-gray-300">
+                          {index + 1}
+                        </td>
+                        <td className="py-4 px-6 border-r w-1/12 border-gray-300 ">
+                          {trainee.account}
+                        </td>
+                        <td className="py-4 px-6 border-r w-6/12 border-gray-300">
+                          {trainee.email}
+                        </td>
+                        <td className="py-4 px-6 border-r w-2/12 text-center border-gray-300">
+                          {trainee.phone}
+                        </td>
+                        <td className="py-4 px-6 text-center w-1/12">
+                          <button
+                            onClick={() =>
+                              handleAddTraineeToClass({
+                                classId: data.classId,
+                                email: trainee.email,
+                              })
+                            }
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6 text-green-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
             {/* Trainee in Class Section */}
             <div className="mb-6 flex justify-between items-center ">
               <h2 className="text-2xl font-semibold">Trainee in class</h2>
@@ -248,7 +371,7 @@ const AddNewClass3Form = ({
                     <th className="py-4 px-6 text-left w-[20%] border-r border-gray-300">
                       Phone number
                     </th>
-                    <th className="py-4 px-6 w-[10%]"></th>
+                    <th className="py-4 px-6">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -258,7 +381,7 @@ const AddNewClass3Form = ({
                       className={index % 2 === 1 ? "bg-[#EFF5EB]" : ""}
                     >
                       <td className="py-4 px-6 border-r border-gray-300">
-                        {index +1}
+                        {index + 1}
                       </td>
                       <td className="py-4 px-6 border-r border-gray-300">
                         {trainee.account}

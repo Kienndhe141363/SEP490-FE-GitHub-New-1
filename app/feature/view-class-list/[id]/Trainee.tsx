@@ -154,7 +154,7 @@ const Trainee = ({ id, listTrainee, fetchListTrainee, status }: Props) => {
 
   return (
     <div>
-      {hasAddTraineePermission && status && (
+      {/* {hasAddTraineePermission && status && (
         <>
           <input
             type="text"
@@ -232,29 +232,11 @@ const Trainee = ({ id, listTrainee, fetchListTrainee, status }: Props) => {
             </table>
           </div>
         </>
-      )}
+      )} */}
 
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Trainee in class</h2>
         <div className="flex gap-4">
-          {/* <button
-            className="px-4 py-2 text-blue-600 hover:underline"
-            onClick={handleDownloadTemplate}
-          >
-            Download Template
-          </button>
-          <input
-            id="file"
-            type="file"
-            className="hidden"
-            onChange={handleImportTrainee}
-          />
-          <label
-            htmlFor="file"
-            className="px-6 py-2 bg-[#6FBC44] text-white rounded cursor-pointer"
-          >
-            Import
-          </label> */}
           <button
             className="px-4 py-2 bg-[#6FBC44] text-white rounded"
             onClick={handleExport}
@@ -279,9 +261,9 @@ const Trainee = ({ id, listTrainee, fetchListTrainee, status }: Props) => {
               <th className="py-4 px-6 text-center  border-r border-gray-300">
                 Phone number
               </th>
-              {hasAddTraineePermission && status && (
+              {/* {hasAddTraineePermission && status && (
                 <th className="py-4 px-6">Action</th>
-              )}
+              )} */}
             </tr>
           </thead>
           <tbody>
@@ -302,7 +284,7 @@ const Trainee = ({ id, listTrainee, fetchListTrainee, status }: Props) => {
                 <td className="py-4 px-6 border-r w-2/12 text-center border-gray-300">
                   {trainee.phone}
                 </td>
-                {hasAddTraineePermission && status && (
+                {/* {hasAddTraineePermission && status && (
                   <td className="py-4 px-6 text-center w-1/12">
                     <button
                       onClick={() => handleRemoveFromClass(trainee.userId)}
@@ -310,7 +292,7 @@ const Trainee = ({ id, listTrainee, fetchListTrainee, status }: Props) => {
                       <MinusCircle className="w-6 h-6 text-red-500" />
                     </button>
                   </td>
-                )}
+                )} */}
               </tr>
             ))}
           </tbody>
