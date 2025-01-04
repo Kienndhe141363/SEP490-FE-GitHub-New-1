@@ -16,12 +16,22 @@ import toast from "react-hot-toast";
 
 const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
-const attendanceStatus = {
+// const attendanceStatus = {
+//   P: "Present",
+//   A: "Absent",
+//   L: "Late",
+//   An: "Absent with notice",
+//   Ln: "Late with notice",
+// };
+
+const attendanceNotes = {
   P: "Present",
+  L: "Late Not Justified",
+  Ln: "Late In",
+  E: "Early Out Not Justified",
+  En: "Early Out",
+  An: "Absent Not Justified",
   A: "Absent",
-  L: "Late",
-  An: "Absent with notice",
-  Ln: "Late with notice",
 };
 
 const getAttendanceColor = (status: string) => {
@@ -240,7 +250,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
     );
   };
 
-  const attendanceStatusKeys = Object.keys(attendanceStatus);
+  const attendanceStatusKeys = Object.keys(attendanceNotes);
 
   const isDisableAttendance = (userId: number, dateSlot: any) => {
     const userAttendance = listAttendance.find(
@@ -487,6 +497,21 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                   ))}
                 </SelectContent>
               </Select>
+              <div className="flex items-center gap-4">
+                <span className="font-medium">Note:</span>
+                <Select>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Click to view note" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(attendanceNotes).map(([key, value]) => (
+                      <SelectItem key={key} value={key}>
+                        {key}: {value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -495,13 +520,13 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
               <thead>
                 <tr>
                   <th
-                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border"
                     rowSpan={2}
                   >
                     #
                   </th>
                   <th
-                    className="p-2 text-left bg-green-500 text-white border border-green-600"
+                    className="p-2 text-left bg-[#6FBC44] text-white border border"
                     style={{ width: "300px" }}
                     rowSpan={2}
                   >
@@ -511,31 +536,31 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                     <th
                       key={date}
                       colSpan={2}
-                      className="p-2 text-center bg-green-500 text-white border border-green-600"
+                      className="p-2 text-center bg-[#6FBC44] text-white border border"
                     >
                       {date}
                     </th>
                   ))}
                   <th
-                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
                     rowSpan={2}
                   >
                     Number of Absent
                   </th>
                   <th
-                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
                     rowSpan={2}
                   >
                     Number of Late
                   </th>
                   <th
-                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
                     rowSpan={2}
                   >
                     No permission rate
                   </th>
                   <th
-                    className="p-2 text-center w-16 bg-green-500 text-white border border-green-600"
+                    className="p-2 text-center w-16 bg-[#6FBC44] text-white border border"
                     rowSpan={2}
                   >
                     Discipline Points
@@ -546,13 +571,13 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                     <>
                       <th
                         key={`${date}-slot1`}
-                        className="p-2 text-center bg-green-500 text-white border border-green-600 min-w-3"
+                        className="p-2 text-center bg-[#6FBC44] text-white border border min-w-3"
                       >
                         Slot 1
                       </th>
                       <th
                         key={`${date}-slot2`}
-                        className="p-2 text-center bg-green-500 text-white border border-green-600 min-w-3"
+                        className="p-2 text-center bg-[#6FBC44] text-white border border min-w-3"
                       >
                         Slot 2
                       </th>
@@ -580,7 +605,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                                       isDisableAttendance(
                                         trainee.userId,
                                         `${date}-slot1`
-                                      ) && "!bg-slate-500"
+                                      ) && "opacity-50"
                                     }
                                     `}
                             value={
@@ -650,7 +675,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
                                       isDisableAttendance(
                                         trainee.userId,
                                         `${date}-slot2`
-                                      ) && "!bg-slate-500"
+                                      ) && "opacity-50"
                                     }
                                     `}
                             value={
