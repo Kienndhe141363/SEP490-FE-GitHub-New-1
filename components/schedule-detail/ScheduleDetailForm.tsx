@@ -152,8 +152,6 @@ const ScheduleForm = ({
     }
   }, [schedule]);
 
-  const hasTeacherReplace = listTrainer?.length > 1;
-
   if (
     !listTrainer.find((item: any) => item.account === formData?.trainer) &&
     formData?.trainer
@@ -161,6 +159,8 @@ const ScheduleForm = ({
     listTrainer.push({
       account: formData?.trainer,
     });
+
+  const hasTeacherReplace = listTrainer?.length > 1;
 
   return (
     <div className="min-h-screen flex-1  bg-[#EFF5EB] p-8 py-10">
