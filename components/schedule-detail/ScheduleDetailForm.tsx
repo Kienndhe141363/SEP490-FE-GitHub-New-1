@@ -201,7 +201,7 @@ const ScheduleForm = ({
                 value={formData.trainer}
                 onChange={handleChange}
                 className="border rounded w-full p-2"
-                disabled={!hasTeacherReplace}
+                // disabled={!hasTeacherReplace}
               >
                 {listTrainer.map((trainer, index) => (
                   <option key={index} value={trainer.account}>
