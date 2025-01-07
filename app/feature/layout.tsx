@@ -86,7 +86,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }; // Add code
 
   // Add code: Hàm xác nhận đăng xuất
-  const confirmSignOut = () => { // Add code
+  const confirmSignOut = () => {
+    // Add code
     localStorage.removeItem("jwtToken");
     router.push("/authen/login");
   }; // Add code
@@ -128,11 +129,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <span className="font-bold">Dashboard</span>
           </Link>
 
-                    {/* Hiển thị các mục khác nếu không phải ROLE_TRAINEE */}
-                    {role !== "ROLE_TRAINEE" && (
+          {/* Hiển thị các mục khác nếu không phải ROLE_TRAINEE */}
+          {role !== "ROLE_TRAINEE" && (
             <>
               {/* Hiển thị System Setting cho ROLE_ADMIN, ROLE_CLASS_ADMIN, ROLE_MANAGER */}
-              {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER"].includes(role) && (
+              {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER"].includes(
+                role
+              ) && (
                 <Link
                   href="/feature/view-system-setting"
                   className={`flex items-center px-6 py-3 ${
@@ -147,7 +150,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
               )}
 
               {/* Hiển thị User cho ROLE_ADMIN, ROLE_CLASS_ADMIN, ROLE_MANAGER */}
-              {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER"].includes(role) && (
+              {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER"].includes(
+                role
+              ) && (
                 <Link
                   href="/feature/view-user-list"
                   className={`flex items-center px-6 py-3 ${
@@ -162,7 +167,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
               )}
 
               {/* Hiển thị Subject cho các vai trò được chỉ định */}
-              {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER", "ROLE_CONTENT_DEVELOPER", "ROLE_TRAINER", "ROLE_TRAINEE"].includes(role) && (
+              {[
+                "ROLE_ADMIN",
+                "ROLE_CLASS_ADMIN",
+                "ROLE_MANAGER",
+                "ROLE_CONTENT_DEVELOPER",
+                "ROLE_TRAINER",
+                "ROLE_TRAINEE",
+              ].includes(role) && (
                 <Link
                   href="/feature/view-subject-list"
                   className={`flex items-center px-6 py-3 ${
@@ -177,7 +189,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
               )}
 
               {/* Hiển thị Curriculum cho các vai trò được chỉ định */}
-              {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER", "ROLE_CONTENT_DEVELOPER", "ROLE_TRAINER", "ROLE_TRAINEE"].includes(role) && (
+              {[
+                "ROLE_ADMIN",
+                "ROLE_CLASS_ADMIN",
+                "ROLE_MANAGER",
+                "ROLE_CONTENT_DEVELOPER",
+                "ROLE_TRAINER",
+                "ROLE_TRAINEE",
+              ].includes(role) && (
                 <Link
                   href="/feature/view-curriculum-list"
                   className={`flex items-center px-6 py-3 ${
@@ -194,7 +213,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
           )}
 
           {/* Hiển thị Class cho các vai trò được chỉ định */}
-          {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER", "ROLE_TRAINER", "ROLE_TRAINEE"].includes(role) && (
+          {[
+            "ROLE_ADMIN",
+            "ROLE_CLASS_ADMIN",
+            "ROLE_MANAGER",
+            "ROLE_TRAINER",
+            "ROLE_TRAINEE",
+          ].includes(role) && (
             <Link
               href={`${
                 role === "ROLE_TRAINEE"
@@ -213,7 +238,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
           )}
 
           {/* Hiển thị Feedback cho ROLE_ADMIN, ROLE_CLASS_ADMIN, ROLE_MANAGER, ROLE_TRAINEE */}
-          {["ROLE_ADMIN", "ROLE_CLASS_ADMIN", "ROLE_MANAGER", "ROLE_TRAINEE"].includes(role) && (
+          {[
+            "ROLE_ADMIN",
+            "ROLE_CLASS_ADMIN",
+            "ROLE_MANAGER",
+            "ROLE_TRAINEE",
+          ].includes(role) && (
             <Link
               href="/feature/feedback-list"
               className={`flex items-center px-6 py-3 ${
@@ -227,7 +257,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
             </Link>
           )}
 
-           
           <button
             onClick={handleSignOut}
             className="w-full flex items-center px-6 py-3 hover:bg-[#5da639] text-left"
@@ -247,11 +276,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
             className="flex items-center space-x-2 hover:underline"
           >
             <img
-                  src={"/assets/icon/User-Avatar.png"}
-                  alt=""
-                  className="rounded-full object-cover w-6 h-6 mt-3 "
-                  
-                />
+              src={profileData?.imgAva || "/assets/icon/User-Avatar.png"}
+              alt=""
+              className="rounded-full object-cover w-6 h-6 mt-3 "
+            />
             <span className="font-bold mt-3">{profileData.account}</span>
           </Link>
         </div>
@@ -259,7 +287,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
         {/* Content */}
         <div className="flex-1">{children}</div>
       </div>
-
 
       {/* Add code: Thêm modal xác nhận đăng xuất */}
       <ConfirmLogSignout
