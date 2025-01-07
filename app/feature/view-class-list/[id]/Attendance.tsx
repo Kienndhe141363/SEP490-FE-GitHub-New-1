@@ -214,7 +214,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
 
     const [start, end] = getRangeTimeByWeek(selectedWeek);
 
-    const attendanceDetail = userAttendance?.litAttendanceStatuses.find(
+    const attendanceDetail = userAttendance?.litAttendanceStatuses?.find(
       (attendance: any) => {
         const endDate = new Date(attendance.endDate);
         const endDay = endDate.getDate(); // Get the day of the month
@@ -267,7 +267,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
     const endToday = new Date();
     endToday.setHours(23, 59, 59, 999);
 
-    const attendanceDetail = userAttendance?.litAttendanceStatuses.find(
+    const attendanceDetail = userAttendance?.litAttendanceStatuses?.find(
       (attendance: any) => {
         const endDate = new Date(attendance.endDate);
         const endDay = endDate.getDate(); // Get the day of the month
@@ -310,7 +310,7 @@ const TakeAttendanceForm = ({ id, listTrainee }: Props) => {
 
     const [start, end] = getRangeTimeByWeek(selectedWeek);
 
-    const attendanceDetail = userAttendance?.litAttendanceStatuses.find(
+    const attendanceDetail = userAttendance?.litAttendanceStatuses?.find(
       (attendance: any) => {
         const endDate = new Date(attendance.endDate);
 
