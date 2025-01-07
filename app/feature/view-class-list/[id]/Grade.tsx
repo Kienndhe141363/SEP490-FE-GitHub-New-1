@@ -95,7 +95,6 @@ const Grade = ({ id }: Props) => {
           status: true, // Trạng thái (true: đã kích hoạt, false: chưa kích hoạt)
           page: 0,
           size: 50, // Số lượng item mỗi trang
-          
         },
         {
           headers: {
@@ -231,7 +230,6 @@ const Grade = ({ id }: Props) => {
   console.log("role", role);
   return (
     <div>
-      
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <span className="font-semibold">Subject:</span>
@@ -281,7 +279,7 @@ const Grade = ({ id }: Props) => {
             {listTrainee?.map((student: any, index) => (
               <tr key={student.userId} className="border-b hover:bg-gray-50">
                 <td className="py-4 px-6 border-r border-gray-200">
-                  {index+1}
+                  {index + 1}
                 </td>
                 <td className="py-4 px-6 border-r border-gray-200">
                   {student.account}
@@ -333,7 +331,10 @@ const Grade = ({ id }: Props) => {
                   </td>
                 ))}
                 <td className="py-4 px-6 text-center">
-                  {calculateTotalTrainee(student.userId)}
+                  {/* {calculateTotalTrainee(student.userId)} */}
+                  {listGrade
+                    ?.find((grade: any) => grade.userId === student.userId)
+                    ?.total?.toFixed(1)}
                 </td>
               </tr>
             ))}
