@@ -219,8 +219,8 @@ const AttendanceOverview = ({ id }: Props) => {
               >
                 {formatDate(
                   new Date(
-                    new Date(schedule.date).setDate(
-                      new Date(schedule.date).getDate() + 1
+                    new Date(schedule.date).setHours(
+                      new Date(schedule.date).getHours() + 12
                     )
                   )
                 )}{" "}
