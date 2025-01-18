@@ -166,7 +166,6 @@ const AddNewClass2Form = ({
   return (
     <div className="flex-1 ml-[228px] bg-[#EFF5EB] p-8 min-h-screen">
       {/* Sidebar */}
-      
 
       {/* Main Content */}
       <form className="flex-1 p-2 h-screen overflow-y-auto">
@@ -293,7 +292,11 @@ const AddNewClass2Form = ({
                     })
                   }
                   value={formData?.startDate}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={
+                    new Date(new Date().setDate(new Date().getDate() + 1))
+                      .toISOString()
+                      .split("T")[0]
+                  }
                 />
               </div>
               <div>
