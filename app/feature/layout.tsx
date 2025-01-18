@@ -242,7 +242,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             "ROLE_ADMIN",
             "ROLE_CLASS_ADMIN",
             "ROLE_MANAGER",
-            "ROLE_TRAINEE",
+            // "ROLE_TRAINEE",
           ].includes(role) && (
             <Link
               href="/feature/feedback-list"
